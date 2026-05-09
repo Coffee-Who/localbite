@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LocalBite - 發現在地好味道</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .app-container {
+            max-width: 390px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 40px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.15);
+            overflow: hidden;
+            border: 12px solid #000;
+            height: 844px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+
+        .status-bar {
+            background: white;
+            padding: 8px 16px;
+            text-align: center;
+            font-size: 12px;
+            color: #333;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .header {
+            background: white;
+            padding: 14px 16px;
+            border-bottom: 1px solid #f5f5f5;
+            flex-shrink: 0;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #d95b37;
+        }
+
+        .header-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            font-size: 18px;
+        }
+
+        .search-container {
+            background: #f5f5f5;
+            border-radius: 10px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .search-container i {
+            font-size: 16px;
+            color: #999;
+        }
+
+        .search-container input {
+            background: none;
+            border: none;
+            flex: 1;
+            font-size: 13px;
+            outline: none;
+            color: #333;
+        }
+
+        .search-container input::placeholder {
+            color: #999;
+        }
+
+        .location-bar {
+            display: flex;
+            gap: 8px;
+        }
+
+        .location-btn {
+            flex: 1;
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: none;
+            border-radius: 6px;
+            padding: 8px;
+            font-size: 11px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            font-weight: 600;
+        }
+
+        .add-place-btn {
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 10px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .page-tabs {
+            padding: 12px;
+            border-bottom: 1px solid #f5f5f5;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+
+        .page-tab {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 18px;
+            padding: 7px 12px;
+            font-size: 11px;
+            cursor: pointer;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .page-tab.active {
+            background: #d95b37;
+            color: white;
+            border-color: #d95b37;
+        }
+
+        .quick-tags {
+            padding: 12px;
+            border-bottom: 1px solid #f5f5f5;
+            overflow-x: auto;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .tag-list {
+            display: inline-flex;
+            gap: 8px;
+        }
+
+        .tag {
+            background: #f5f5f5;
+            color: #333;
+            border: none;
+            border-radius: 16px;
+            padding: 7px 13px;
+            font-size: 12px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .tag.active {
+            background: #d95b37;
+            color: white;
+            font-weight: 600;
+        }
+
+        .filter-panel {
+            background: white;
+            border-bottom: 1px solid #f5f5f5;
+            padding: 10px 14px;
+            flex-shrink: 0;
+        }
+
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            color: #d95b37;
+        }
+
+        .filter-content {
+            display: none;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #f5f5f5;
+        }
+
+        .filter-content.show {
+            display: block;
+        }
+
+        .distance-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 0;
+            font-size: 12px;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .item {
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .item-image {
+            width: 100%;
+            height: 140px;
+            background: linear-gradient(135deg, #e8c8b0 0%, #d4a574 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            position: relative;
+        }
+
+        .rating-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #d95b37;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .distance-label {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: #0099ff;
+            color: white;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+        }
+
+        .item-info {
+            padding: 11px 13px;
+        }
+
+        .item-name {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .item-rating {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            margin-bottom: 5px;
+            font-size: 11px;
+        }
+
+        .stars {
+            color: #f5a623;
+            font-weight: 600;
+        }
+
+        .item-location {
+            font-size: 11px;
+            color: #999;
+            margin-bottom: 6px;
+        }
+
+        .item-desc {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .item-buttons {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .btn-detail {
+            background: white;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .btn-route {
+            background: #d95b37;
+            color: white;
+        }
+
+        .btn-delete {
+            background: white;
+            color: #d95b37;
+            border: 1px solid #d95b37;
+        }
+
+        .form-section {
+            padding: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            min-height: 60px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 8px;
+            padding: 10px 14px;
+            border-top: 1px solid #f5f5f5;
+        }
+
+        .btn-submit {
+            flex: 1;
+            padding: 10px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 10px;
+            background: #f5f5f5;
+            color: #333;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .empty-state {
+            padding: 40px 20px;
+            text-align: center;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .bottom-nav {
+            background: white;
+            border-top: 1px solid #f0f0f0;
+            padding: 8px 0;
+            display: flex;
+            justify-content: space-around;
+            flex-shrink: 0;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            color: #999;
+            font-size: 10px;
+            padding: 6px;
+        }
+
+        .nav-btn i {
+            font-size: 18px;
+        }
+
+        .nav-btn.active {
+            color: #d95b37;
+        }
+
+        .custom-badge {
+            background: #ff9800;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .info-box {
+            background: #f0f7ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 6px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 11px;
+            color: #0099ff;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="app-content">
+        
+        <div class="status-bar">9:41</div>
+        
+        <div class="header">
+            <div class="header-top">
+                <div class="logo">
+                    <i class="fas fa-map-pin"></i>LocalBite
+                </div>
+                <button class="header-btn" onclick="showTab('add')"><i class="fas fa-plus"></i></button>
+            </div>
+            <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="搜尋食物、地點..." onkeypress="if(event.key==='Enter') search()">
+            </div>
+            <div class="location-bar">
+                <button class="location-btn" onclick="getLocation()">
+                    <i class="fas fa-location-arrow"></i><span id="locText">使用我的位置</span>
+                </button>
+                <button class="add-place-btn" onclick="showTab('add')"><i class="fas fa-plus"></i>新增</button>
+            </div>
+        </div>
+
+        <div class="page-tabs">
+            <button class="page-tab active" onclick="showTab('home')">首頁搜尋</button>
+            <button class="page-tab" onclick="showTab('add')">新增景點</button>
+            <button class="page-tab" onclick="showTab('filter')">距離篩選</button>
+            <button class="page-tab" onclick="showTab('myplaces')">我的地點</button>
+        </div>
+
+        <div id="quickTagsSection" class="quick-tags">
+            <div class="tag-list">
+                <button class="tag active" onclick="filterByTag('全部')">🍽️ 全部</button>
+                <button class="tag" onclick="filterByTag('肉骨茶')">🍲 肉骨茶</button>
+                <button class="tag" onclick="filterByTag('咖啡')">☕ 咖啡</button>
+                <button class="tag" onclick="filterByTag('景點')">🏛️ 景點</button>
+                <button class="tag" onclick="filterByTag('小吃')">🍜 小吃</button>
+            </div>
+        </div>
+
+        <div id="filterSection" class="filter-panel" style="display: none;">
+            <div class="filter-header" onclick="toggleFilter()">
+                <span><i class="fas fa-sliders-h"></i> 距離篩選</span>
+                <span id="filterToggle">▼</span>
+            </div>
+            <div class="filter-content" id="filterContent">
+                <div class="distance-item"><input type="radio" name="distance" value="all" checked onchange="applyFilter()"> <label>全部</label></div>
+                <div class="distance-item"><input type="radio" name="distance" value="200" onchange="applyFilter()"> <label>200 公尺</label></div>
+                <div class="distance-item"><input type="radio" name="distance" value="500" onchange="applyFilter()"> <label>500 公尺</label></div>
+                <div class="distance-item"><input type="radio" name="distance" value="1000" onchange="applyFilter()"> <label>1 公里</label></div>
+                <div class="distance-item"><input type="radio" name="distance" value="2000" onchange="applyFilter()"> <label>2 公里</label></div>
+                <div class="distance-item"><input type="radio" name="distance" value="5000" onchange="applyFilter()"> <label>5 公里</label></div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div id="home" class="page active"></div>
+            <div id="add" class="page">
+                <div class="form-section">
+                    <h2 style="font-size: 14px; margin-bottom: 16px;">+ 新增景點或美食</h2>
+                    <div class="form-row">
+                        <div class="form-group"><label>國家</label><input type="text" id="fCountry" placeholder="台灣"></div>
+                        <div class="form-group"><label>地區</label><input type="text" id="fRegion" placeholder="台北"></div>
+                    </div>
+                    <div class="form-group"><label>名稱</label><input type="text" id="fName" placeholder="景點名稱"></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>類型</label><select id="fType"><option>美食</option><option>景點</option><option>咖啡</option><option>肉骨茶</option><option>小吃</option></select></div>
+                        <div class="form-group"><label>價格</label><select id="fPrice"><option>$</option><option>$$</option><option>$$$</option></select></div>
+                    </div>
+                    <div class="form-group"><label>地址</label><input type="text" id="fAddress" placeholder="完整地址"></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>緯度</label><input type="number" id="fLat" placeholder="25.0431" step="0.0001"></div>
+                        <div class="form-group"><label>經度</label><input type="number" id="fLng" placeholder="121.5648" step="0.0001"></div>
+                    </div>
+                    <div class="form-group"><label>評分</label><input type="number" id="fRating" placeholder="4.5" min="1" max="5" step="0.1" value="4"></div>
+                    <div class="form-group"><label>描述</label><textarea id="fDesc" placeholder="特色描述..."></textarea></div>
+                    <div class="info-box"><strong>💡 如何找座標？</strong>Google Maps 右鍵點擊→複製座標</div>
+                </div>
+            </div>
+            <div id="filter" class="page">
+                <div style="padding: 14px;"><h2 style="font-size: 14px; margin-bottom: 12px;">距離篩選</h2></div>
+                <div id="itemsList2"></div>
+            </div>
+            <div id="myplaces" class="page"></div>
+        </div>
+
+        <div id="formActions" class="form-actions" style="display: none;">
+            <button class="btn-cancel" onclick="showTab('home')">取消</button>
+            <button class="btn-submit" onclick="savePlace()">新增</button>
+        </div>
+
+        <div class="bottom-nav">
+            <button class="nav-btn active" onclick="showTab('home')"><i class="fas fa-home"></i>首頁</button>
+            <button class="nav-btn" onclick="showTab('filter')"><i class="fas fa-map"></i>篩選</button>
+            <button class="nav-btn" onclick="showTab('myplaces')"><i class="fas fa-heart"></i>我的</button>
+            <button class="nav-btn" onclick="exportData()"><i class="fas fa-download"></i>備份</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    const defaultPlaces = [
+        { name: '天天海南雞飯', country: '新加坡', region: '牛車水', type: '美食', price: '$', address: '牛車水', lat: 1.2847, lng: 103.8477, rating: 4.4, reviews: 8765, desc: '新加坡最有名的海南雞飯，肉質鮮嫩多汁。', icon: '🍲' },
+        { name: '松發肉骨茶', country: '新加坡', region: '克羅碼頭', type: '肉骨茶', price: '$$', address: '克羅碼頭', lat: 1.2898, lng: 103.8520, rating: 4.3, reviews: 6321, desc: '湯頭醇厚，肉質軟嫩的肉骨茶。', icon: '🍜' },
+        { name: '亞坤咖啡柬司', country: '新加坡', region: '烏節路', type: '咖啡', price: '$', address: '烏節路', lat: 1.2957, lng: 103.8332, rating: 4.2, reviews: 5432, desc: '經典早餐連鎖，咖啡和土司是招牌。', icon: '☕' },
+        { name: '印度咖喱館', country: '新加坡', region: '小印度', type: '美食', price: '$$', address: '小印度', lat: 1.3050, lng: 103.8470, rating: 4.1, reviews: 4156, desc: '正宗印度料理，咖喱濃郁。', icon: '🍛' },
+        { name: '濱海灣花園', country: '新加坡', region: '濱海灣', type: '景點', price: '$$', address: '濱海灣', lat: 1.2819, lng: 103.8643, rating: 4.7, reviews: 15000, desc: '新加坡地標，夜景璀璨。', icon: '🌳' }
+    ];
+
+    let allPlaces = [...defaultPlaces, ...JSON.parse(localStorage.getItem('localBitePlaces') || '[]')];
+    let currentLocation = null;
+    let currentTag = '全部';
+    let currentDistance = 'all';
+
+    function getLocation() {
+        if (navigator.geolocation) {
+            document.getElementById('locText').textContent = '定位中...';
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    currentLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
+                    document.getElementById('locText').textContent = '已定位';
+                    search();
+                },
+                function() {
+                    currentLocation = { lat: 1.3521, lng: 103.8198 };
+                    document.getElementById('locText').textContent = '已定位(新加坡)';
+                    search();
+                }
+            );
+        }
+    }
+
+    function calculateDistance(lat1, lng1, lat2, lng2) {
+        const R = 6371, dLat = (lat2 - lat1) * Math.PI / 180, dLng = (lng2 - lng1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng/2) * Math.sin(dLng/2);
+        return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) * 1000;
+    }
+
+    function search() {
+        const keyword = document.getElementById('searchInput').value.toLowerCase();
+        let results = allPlaces.filter(p => !keyword || p.name.toLowerCase().includes(keyword) || p.type.toLowerCase().includes(keyword));
+        if (currentTag !== '全部') results = results.filter(p => p.type === currentTag);
+        if (currentLocation) results = results.map(p => ({...p, distance: calculateDistance(currentLocation.lat, currentLocation.lng, p.lat, p.lng)})).sort((a, b) => a.distance - b.distance);
+        applyFilter();
+    }
+
+    function filterByTag(tag) {
+        currentTag = tag;
+        document.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        search();
+    }
+
+    function applyFilter() {
+        const distance = document.querySelector('input[name="distance"]:checked').value;
+        currentDistance = distance;
+        displayResults();
+    }
+
+    function displayResults() {
+        const keyword = document.getElementById('searchInput').value.toLowerCase();
+        let results = allPlaces.filter(p => !keyword || p.name.toLowerCase().includes(keyword) || p.type.toLowerCase().includes(keyword));
+        if (currentLocation) results = results.map(p => ({...p, distance: calculateDistance(currentLocation.lat, currentLocation.lng, p.lat, p.lng)}));
+        if (currentDistance !== 'all' && currentLocation) results = results.filter(p => p.distance <= parseInt(currentDistance));
+
+        document.getElementById('home').innerHTML = results.length ? results.map(p => `
+            <div class="item">
+                <div class="item-image">
+                    ${p.icon}
+                    <span class="rating-badge">${p.rating}</span>
+                    ${currentLocation && p.distance ? `<span class="distance-label">${p.distance < 1000 ? Math.round(p.distance) + 'm' : (p.distance / 1000).toFixed(1) + 'km'}</span>` : ''}
+                </div>
+                <div class="item-info">
+                    <div class="item-name">${p.name} ${p.custom ? '<span class="custom-badge">自訂</span>' : ''}</div>
+                    <div class="item-rating"><span class="stars">★ ${p.rating}</span> <span>(${p.reviews})</span></div>
+                    <div class="item-location">${p.price} · ${p.region}</div>
+                    <div class="item-desc">${p.desc}</div>
+                    <div class="item-buttons">
+                        <button class="btn btn-detail">詳情</button>
+                        <button class="btn btn-route"><i class="fas fa-location-arrow"></i>路線</button>
+                    </div>
+                </div>
+            </div>
+        `).join('') : '<div class="empty-state"><i class="fas fa-search"></i><p>無搜尋結果</p></div>';
+    }
+
+    function showTab(tab) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(tab).classList.add('active');
+        document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
+        event?.target?.classList.add('active');
+        
+        document.getElementById('quickTagsSection').style.display = tab === 'home' ? 'block' : 'none';
+        document.getElementById('filterSection').style.display = tab === 'home' ? 'block' : 'none';
+        document.getElementById('formActions').style.display = tab === 'add' ? 'flex' : 'none';
+
+        if (tab === 'home') displayResults();
+        else if (tab === 'filter') {
+            let results = allPlaces.map(p => ({...p, distance: currentLocation ? calculateDistance(currentLocation.lat, currentLocation.lng, p.lat, p.lng) : 999999}));
+            document.getElementById('itemsList2').innerHTML = results.length ? results.map(p => `
+                <div class="item">
+                    <div class="item-image">${p.icon}<span class="rating-badge">${p.rating}</span>${currentLocation && p.distance ? `<span class="distance-label">${p.distance < 1000 ? Math.round(p.distance) + 'm' : (p.distance / 1000).toFixed(1) + 'km'}</span>` : ''}</div>
+                    <div class="item-info">
+                        <div class="item-name">${p.name}</div>
+                        <div class="item-rating"><span class="stars">★ ${p.rating}</span></div>
+                        <div class="item-location">${p.price} · ${p.region}</div>
+                        <div class="item-desc">${p.desc}</div>
+                    </div>
+                </div>
+            `).join('') : '<div class="empty-state"><p>請先定位</p></div>';
+        } else if (tab === 'myplaces') {
+            const custom = allPlaces.filter(p => p.custom);
+            document.getElementById('myplaces').innerHTML = custom.length ? custom.map(p => `
+                <div class="item" style="border-left: 3px solid #ff9800;">
+                    <div class="item-image" style="background: linear-gradient(135deg, #ffe0b2 0%, #ffcc80 100%);">
+                        ${p.icon}
+                        <span class="rating-badge" style="background: #ff9800;">自訂</span>
+                    </div>
+                    <div class="item-info">
+                        <div class="item-name">${p.name}</div>
+                        <div class="item-rating"><span class="stars">★ ${p.rating}</span></div>
+                        <div class="item-location">${p.price} · ${p.region}</div>
+                        <div class="item-buttons">
+                            <button class="btn btn-detail">詳情</button>
+                            <button class="btn btn-delete" onclick="deletePlace('${p.name}')"><i class="fas fa-trash"></i>刪除</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('') : '<div class="empty-state"><i class="fas fa-map-pin"></i><p>尚無自訂景點</p></div>';
+        }
+    }
+
+    function savePlace() {
+        const place = {
+            name: document.getElementById('fName').value,
+            country: document.getElementById('fCountry').value,
+            region: document.getElementById('fRegion').value,
+            type: document.getElementById('fType').value,
+            price: document.getElementById('fPrice').value,
+            address: document.getElementById('fAddress').value,
+            lat: parseFloat(document.getElementById('fLat').value),
+            lng: parseFloat(document.getElementById('fLng').value),
+            rating: parseFloat(document.getElementById('fRating').value),
+            reviews: 0,
+            desc: document.getElementById('fDesc').value,
+            icon: '📍',
+            custom: true
+        };
+        
+        if (!place.name || !place.lat || !place.lng) { alert('請填寫必要欄位'); return; }
+        allPlaces.push(place);
+        localStorage.setItem('localBitePlaces', JSON.stringify(allPlaces.filter(p => p.custom)));
+        alert('✅ 新增成功！');
+        document.getElementById('fName').value = '';
+        document.getElementById('fDesc').value = '';
+        showTab('home');
+    }
+
+    function deletePlace(name) {
+        if (confirm('確定刪除？')) {
+            allPlaces = allPlaces.filter(p => p.name !== name);
+            localStorage.setItem('localBitePlaces', JSON.stringify(allPlaces.filter(p => p.custom)));
+            showTab('myplaces');
+        }
+    }
+
+    function toggleFilter() {
+        const content = document.getElementById('filterContent');
+        content.classList.toggle('show');
+        document.getElementById('filterToggle').textContent = content.classList.contains('show') ? '▲' : '▼';
+    }
+
+    function exportData() {
+        const data = JSON.stringify(allPlaces.filter(p => p.custom), null, 2);
+        const blob = new Blob([data], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `localbite-${new Date().toISOString().slice(0,10)}.json`;
+        link.click();
+        alert('✅ 已導出備份');
+    }
+
+    displayResults();
+</script>
+
+</body>
+</html>
