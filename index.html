@@ -497,7 +497,12 @@
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) * 1000;
     }
 
-    function search() { applyFilter(); }
+    function search() { 
+        currentTag = '全部';
+        document.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
+        document.querySelector('.tag').classList.add('active');
+        showTab('home', null);
+    }
 
     function filterByTag(tag, e) {
         currentTag = tag;
