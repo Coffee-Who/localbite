@@ -8,183 +8,88 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDMyoFgk8rLOSPpfnBXE5A-qLfMGxPpfcc"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDMyoFgk8rLOSPpfnBXE5A-qLfMGxPpfcc&libraries=places"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f5f5;
-            color: #333;
-        }
-
-        .app-container {
-            max-width: 390px;
-            margin: 20px auto;
-            background: white;
-            border-radius: 40px;
-            box-shadow: 0 0 50px rgba(0,0,0,0.15);
-            overflow: hidden;
-            border: 12px solid #000;
-            height: 844px;
-            display: flex;
-            flex-direction: column;
-        }
-
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; }
+        .app-container { max-width: 390px; margin: 20px auto; background: white; border-radius: 40px; box-shadow: 0 0 50px rgba(0,0,0,0.15); overflow: hidden; border: 12px solid #000; height: 844px; display: flex; flex-direction: column; }
         .app-content { width: 100%; height: 100%; display: flex; flex-direction: column; background: white; }
-
         .status-bar { background: white; padding: 8px 16px; text-align: center; font-size: 12px; color: #333; border-bottom: 1px solid #f0f0f0; }
-
         .header { background: white; padding: 14px 16px; border-bottom: 1px solid #f5f5f5; flex-shrink: 0; }
-
         .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-
         .logo { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 700; color: #d95b37; }
-
         .header-right { display: flex; align-items: center; gap: 8px; }
-
         .header-btn { background: none; border: none; cursor: pointer; color: #666; font-size: 18px; }
-
         .sync-status { font-size: 10px; color: #2e7d32; background: #e8f5e9; padding: 2px 6px; border-radius: 4px; font-weight: 600; display: none; }
-
         .search-container { background: #f5f5f5; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-
         .search-container i { font-size: 16px; color: #999; }
-
         .search-container input { background: none; border: none; flex: 1; font-size: 13px; outline: none; color: #333; }
-
         .search-container input::placeholder { color: #999; }
-
         .search-btn { background: #d95b37; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 14px; padding: 4px 10px; flex-shrink: 0; }
-
         .location-bar { display: flex; gap: 8px; }
-
         .location-btn { flex: 1; background: #e8f5e9; color: #2e7d32; border: none; border-radius: 6px; padding: 8px; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; font-weight: 600; }
-
         .add-place-btn { background: #ff9800; color: white; border: none; border-radius: 6px; padding: 8px 10px; cursor: pointer; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
-
         .page-tabs { padding: 12px; border-bottom: 1px solid #f5f5f5; display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; flex-shrink: 0; }
-
         .page-tab { background: white; border: 1px solid #ddd; border-radius: 18px; padding: 7px 10px; font-size: 11px; cursor: pointer; color: #333; font-weight: 600; }
-
         .page-tab.active { background: #d95b37; color: white; border-color: #d95b37; }
-
         .quick-tags { padding: 12px; border-bottom: 1px solid #f5f5f5; overflow-x: auto; white-space: nowrap; flex-shrink: 0; }
-
         .tag-list { display: inline-flex; gap: 8px; }
-
         .tag { background: #f5f5f5; color: #333; border: none; border-radius: 16px; padding: 7px 13px; font-size: 12px; cursor: pointer; flex-shrink: 0; }
-
         .tag.active { background: #d95b37; color: white; font-weight: 600; }
-
         .filter-panel { background: white; border-bottom: 1px solid #f5f5f5; padding: 10px 14px; flex-shrink: 0; }
-
         .filter-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 12px; font-weight: 600; color: #d95b37; }
-
         .filter-content { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid #f5f5f5; }
-
         .filter-content.show { display: block; }
-
         .distance-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 12px; }
-
         .content { flex: 1; overflow-y: auto; }
-
         .page { display: none; }
-
         .page.active { display: block; }
-
         #map.page { height: 100%; display: none; }
-
         #map.page.active { display: block; }
-
         #googleMap { width: 100%; height: 100%; min-height: 450px; }
-
         .item { border-bottom: 1px solid #f5f5f5; }
-
         .item-image { width: 100%; height: 140px; background: linear-gradient(135deg, #e8c8b0 0%, #d4a574 100%); display: flex; align-items: center; justify-content: center; font-size: 40px; position: relative; }
-
         .rating-badge { position: absolute; top: 8px; right: 8px; background: #d95b37; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-
         .distance-label { position: absolute; bottom: 8px; right: 8px; background: #0099ff; color: white; padding: 3px 6px; border-radius: 3px; font-size: 10px; }
-
         .item-info { padding: 11px 13px; }
-
         .item-name { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
-
         .item-rating { display: flex; gap: 6px; align-items: center; margin-bottom: 5px; font-size: 11px; }
-
         .stars { color: #f5a623; font-weight: 600; }
-
         .item-location { font-size: 11px; color: #999; margin-bottom: 6px; }
-
         .item-desc { font-size: 11px; color: #666; margin-bottom: 8px; }
-
         .item-buttons { display: flex; gap: 6px; }
-
         .btn { flex: 1; padding: 8px; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 600; }
-
         .btn-detail { background: white; color: #333; border: 1px solid #ddd; }
-
         .btn-route { background: #d95b37; color: white; }
-
         .btn-delete { background: white; color: #d95b37; border: 1px solid #d95b37; }
-
         .form-section { padding: 14px; }
-
         .form-group { margin-bottom: 12px; }
-
         .form-group label { display: block; font-size: 12px; font-weight: 600; color: #333; margin-bottom: 6px; }
-
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px; font-family: inherit; }
-
         .form-group textarea { min-height: 60px; }
-
         .form-actions { display: flex; gap: 8px; padding: 10px 14px; border-top: 1px solid #f5f5f5; }
-
         .btn-submit { flex: 1; padding: 10px; background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; }
-
         .btn-cancel { flex: 1; padding: 10px; background: #f5f5f5; color: #333; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; }
-
         .empty-state { padding: 40px 20px; text-align: center; color: #999; }
-
         .empty-state i { font-size: 40px; margin-bottom: 10px; }
-
         .bottom-nav { background: white; border-top: 1px solid #f0f0f0; padding: 8px 0; display: flex; justify-content: space-around; flex-shrink: 0; }
-
         .nav-btn { background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; color: #999; font-size: 10px; padding: 6px; }
-
         .nav-btn i { font-size: 18px; }
-
         .nav-btn.active { color: #d95b37; }
-
         .custom-badge { background: #ff9800; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; }
-
         .cloud-badge { background: #e3f2fd; color: #1565c0; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; }
-
         .info-box { background: #f0f7ff; border: 1px solid #b3d9ff; border-radius: 6px; padding: 10px; margin: 10px 0; font-size: 11px; color: #0099ff; }
-
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
-
         .modal-overlay.active { display: flex; }
-
         .modal { background: white; border-radius: 16px; padding: 24px; width: 320px; max-width: 90vw; }
-
         .modal h3 { font-size: 16px; margin-bottom: 16px; color: #d95b37; }
-
         .modal input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; margin-bottom: 10px; box-sizing: border-box; font-family: inherit; }
-
         .modal-actions { display: flex; gap: 8px; margin-top: 4px; }
-
         .modal-switch { text-align: center; margin-top: 12px; font-size: 12px; color: #666; }
-
         .modal-switch a { color: #d95b37; cursor: pointer; text-decoration: none; }
-
         .btn-logout { flex: 1; padding: 10px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; }
-
         .user-info-box { background: #f0f7ff; border-radius: 8px; padding: 10px; margin-bottom: 16px; font-size: 12px; }
-
         .user-info-box strong { display: block; margin-bottom: 4px; }
     </style>
 </head>
@@ -192,17 +97,13 @@
 
 <div class="app-container">
     <div class="app-content">
-
         <div class="status-bar">9:41</div>
-
         <div class="header">
             <div class="header-top">
-                <div class="logo">
-                    <i class="fas fa-map-pin"></i>LocalBite
-                </div>
+                <div class="logo"><i class="fas fa-map-pin"></i>LocalBite</div>
                 <div class="header-right">
                     <span class="sync-status" id="syncStatus">☁️ 已同步</span>
-                    <button class="header-btn" id="authBtn" onclick="toggleAuthModal()" title="登入/帳號"><i class="fas fa-user"></i></button>
+                    <button class="header-btn" id="authBtn" onclick="toggleAuthModal()"><i class="fas fa-user"></i></button>
                     <button class="header-btn" onclick="showTab('add', event)"><i class="fas fa-plus"></i></button>
                 </div>
             </div>
@@ -254,7 +155,6 @@
 
         <div class="content">
             <div id="home" class="page active"></div>
-
             <div id="add" class="page">
                 <div class="form-section">
                     <h2 style="font-size: 14px; margin-bottom: 16px;">+ 新增景點或美食</h2>
@@ -265,470 +165,4 @@
                     <div class="form-group"><label>名稱</label><input type="text" id="fName" placeholder="景點名稱"></div>
                     <div class="form-row">
                         <div class="form-group"><label>類型</label><select id="fType"><option>美食</option><option>景點</option><option>咖啡</option><option>肉骨茶</option><option>小吃</option></select></div>
-                        <div class="form-group"><label>價格</label><select id="fPrice"><option>$</option><option>$$</option><option>$$$</option></select></div>
-                    </div>
-                    <div class="form-group"><label>地址</label><input type="text" id="fAddress" placeholder="完整地址"></div>
-                    <div class="form-row">
-                        <div class="form-group"><label>緯度</label><input type="number" id="fLat" placeholder="25.0431" step="0.0001"></div>
-                        <div class="form-group"><label>經度</label><input type="number" id="fLng" placeholder="121.5648" step="0.0001"></div>
-                    </div>
-                    <div class="form-group"><label>評分</label><input type="number" id="fRating" placeholder="4.5" min="1" max="5" step="0.1" value="4"></div>
-                    <div class="form-group"><label>描述</label><textarea id="fDesc" placeholder="特色描述..."></textarea></div>
-                    <div class="info-box"><strong>💡 如何找座標？</strong>Google Maps 右鍵點擊 → 複製座標</div>
-                </div>
-            </div>
-
-            <div id="filter" class="page">
-                <div style="padding: 14px;"><h2 style="font-size: 14px; margin-bottom: 12px;">距離篩選</h2></div>
-                <div id="itemsList2"></div>
-            </div>
-
-            <div id="myplaces" class="page"></div>
-
-            <div id="map" class="page">
-                <div id="googleMap"></div>
-            </div>
-        </div>
-
-        <div id="formActions" class="form-actions" style="display: none;">
-            <button class="btn-cancel" onclick="showTab('home', event)">取消</button>
-            <button class="btn-submit" onclick="savePlace()">新增</button>
-        </div>
-
-        <div class="bottom-nav">
-            <button class="nav-btn active" id="nav-home" onclick="showTab('home', event)"><i class="fas fa-home"></i>首頁</button>
-            <button class="nav-btn" id="nav-filter" onclick="showTab('filter', event)"><i class="fas fa-sliders-h"></i>篩選</button>
-            <button class="nav-btn" id="nav-map" onclick="showTab('map', event)"><i class="fas fa-map"></i>地圖</button>
-            <button class="nav-btn" id="nav-myplaces" onclick="showTab('myplaces', event)"><i class="fas fa-heart"></i>我的</button>
-            <button class="nav-btn" id="nav-add" onclick="exportData()"><i class="fas fa-download"></i>備份</button>
-        </div>
-
-    </div>
-</div>
-
-<!-- Auth Modal -->
-<div class="modal-overlay" id="authModal">
-    <div class="modal">
-        <div id="loginForm">
-            <h3><i class="fas fa-user"></i> 登入</h3>
-            <input type="email" id="loginEmail" placeholder="Email">
-            <input type="password" id="loginPassword" placeholder="密碼" onkeypress="if(event.key==='Enter') login()">
-            <div class="modal-actions">
-                <button class="btn-cancel" onclick="toggleAuthModal()">取消</button>
-                <button class="btn-submit" onclick="login()">登入</button>
-            </div>
-            <div class="modal-switch">沒有帳號？<a onclick="showSignup()">立即註冊</a></div>
-        </div>
-        <div id="signupForm" style="display:none;">
-            <h3><i class="fas fa-user-plus"></i> 註冊</h3>
-            <input type="email" id="signupEmail" placeholder="Email">
-            <input type="password" id="signupPassword" placeholder="密碼（至少 6 位）" onkeypress="if(event.key==='Enter') signup()">
-            <div class="modal-actions">
-                <button class="btn-cancel" onclick="toggleAuthModal()">取消</button>
-                <button class="btn-submit" onclick="signup()">註冊</button>
-            </div>
-            <div class="modal-switch">已有帳號？<a onclick="showLogin()">登入</a></div>
-        </div>
-        <div id="userPanel" style="display:none;">
-            <h3><i class="fas fa-user-check"></i> 已登入</h3>
-            <div class="user-info-box">
-                <strong id="userEmailDisplay"></strong>
-                <span>☁️ 自訂地點已雲端同步</span>
-            </div>
-            <div class="modal-actions">
-                <button class="btn-cancel" onclick="toggleAuthModal()">關閉</button>
-                <button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> 登出</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyBvbz07UEwVw7K3tI4JcLcW2tXkqf_bksw",
-        authDomain: "localbite-8e154.firebaseapp.com",
-        databaseURL: "https://localbite-8e154-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "localbite-8e154",
-        storageBucket: "localbite-8e154.firebasestorage.app",
-        messagingSenderId: "798128436129",
-        appId: "1:798128436129:web:b8d2ec5db4d745cb4c91e0"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const database = firebase.database();
-
-    let currentUser = null;
-    let firebaseUnsubscribe = null;
-
-    auth.onAuthStateChanged(user => {
-        currentUser = user;
-        updateAuthUI();
-        if (user) {
-            subscribeFirebase();
-        } else {
-            if (firebaseUnsubscribe) { firebaseUnsubscribe(); firebaseUnsubscribe = null; }
-            customPlaces = JSON.parse(localStorage.getItem('localBitePlaces') || '[]');
-            allPlaces = [...defaultPlaces, ...customPlaces];
-            displayResults();
-        }
-    });
-
-    const defaultPlaces = [
-        { name: '天天海南雞飯', country: '新加坡', region: '牛車水', type: '美食', price: '$', address: '牛車水', lat: 1.2847, lng: 103.8477, rating: 4.4, reviews: 8765, desc: '新加坡最有名的海南雞飯，肉質鮮嫩多汁。', icon: '🍲' },
-        { name: '松發肉骨茶', country: '新加坡', region: '克羅碼頭', type: '肉骨茶', price: '$$', address: '克羅碼頭', lat: 1.2898, lng: 103.8520, rating: 4.3, reviews: 6321, desc: '湯頭醇厚，肉質軟嫩的肉骨茶。', icon: '🍜' },
-        { name: '亞坤咖啡柬司', country: '新加坡', region: '烏節路', type: '咖啡', price: '$', address: '烏節路', lat: 1.2957, lng: 103.8332, rating: 4.2, reviews: 5432, desc: '經典早餐連鎖，咖啡和土司是招牌。', icon: '☕' },
-        { name: '印度咖喱館', country: '新加坡', region: '小印度', type: '美食', price: '$$', address: '小印度', lat: 1.3050, lng: 103.8470, rating: 4.1, reviews: 4156, desc: '正宗印度料理，咖喱濃郁。', icon: '🍛' },
-        { name: '濱海灣花園', country: '新加坡', region: '濱海灣', type: '景點', price: '$$', address: '濱海灣', lat: 1.2819, lng: 103.8643, rating: 4.7, reviews: 15000, desc: '新加坡地標，夜景璀璨。', icon: '🌳' }
-    ];
-
-    let customPlaces = JSON.parse(localStorage.getItem('localBitePlaces') || '[]');
-    let allPlaces = [...defaultPlaces, ...customPlaces];
-    let currentLocation = null;
-    let currentTag = '全部';
-    let currentDistance = 'all';
-
-    function subscribeFirebase() {
-        const ref = database.ref('users/' + currentUser.uid + '/places');
-        firebaseUnsubscribe = ref.on('value', snapshot => {
-            const data = snapshot.val();
-            customPlaces = data ? Object.entries(data).map(([key, val]) => ({...val, firebaseKey: key})) : [];
-            localStorage.setItem('localBitePlaces', JSON.stringify(customPlaces));
-            allPlaces = [...defaultPlaces, ...customPlaces];
-            displayResults();
-            document.getElementById('syncStatus').style.display = 'inline';
-        });
-    }
-
-    function savePlaceToFirebase(place) {
-        if (!currentUser) return;
-        database.ref('users/' + currentUser.uid + '/places').push(place);
-    }
-
-    function deletePlaceFromFirebase(firebaseKey) {
-        if (!currentUser || !firebaseKey) return;
-        database.ref('users/' + currentUser.uid + '/places/' + firebaseKey).remove();
-    }
-
-    function updateAuthUI() {
-        const btn = document.getElementById('authBtn');
-        const syncEl = document.getElementById('syncStatus');
-        if (currentUser) {
-            btn.innerHTML = '<i class="fas fa-user-check" style="color:#d95b37"></i>';
-            syncEl.style.display = 'inline';
-        } else {
-            btn.innerHTML = '<i class="fas fa-user"></i>';
-            syncEl.style.display = 'none';
-        }
-    }
-
-    function toggleAuthModal() {
-        const modal = document.getElementById('authModal');
-        modal.classList.toggle('active');
-        if (modal.classList.contains('active')) {
-            document.getElementById('loginForm').style.display = currentUser ? 'none' : 'block';
-            document.getElementById('signupForm').style.display = 'none';
-            document.getElementById('userPanel').style.display = currentUser ? 'block' : 'none';
-            if (currentUser) document.getElementById('userEmailDisplay').textContent = currentUser.email;
-        }
-    }
-
-    function showSignup() { document.getElementById('loginForm').style.display = 'none'; document.getElementById('signupForm').style.display = 'block'; }
-    function showLogin() { document.getElementById('signupForm').style.display = 'none'; document.getElementById('loginForm').style.display = 'block'; }
-
-    function login() {
-        const email = document.getElementById('loginEmail').value.trim();
-        const password = document.getElementById('loginPassword').value;
-        if (!email || !password) { alert('請填寫 Email 和密碼'); return; }
-        auth.signInWithEmailAndPassword(email, password)
-            .then(() => { toggleAuthModal(); })
-            .catch(err => alert('登入失敗：' + err.message));
-    }
-
-    function signup() {
-        const email = document.getElementById('signupEmail').value.trim();
-        const password = document.getElementById('signupPassword').value;
-        if (!email || !password) { alert('請填寫 Email 和密碼'); return; }
-        auth.createUserWithEmailAndPassword(email, password)
-            .then(() => { toggleAuthModal(); })
-            .catch(err => alert('註冊失敗：' + err.message));
-    }
-
-    function logout() { auth.signOut(); toggleAuthModal(); }
-
-    function getLocation() {
-        if (!navigator.geolocation) {
-            alert('您的瀏覽器不支援定位功能');
-            return;
-        }
-        const btn = document.querySelector('.location-btn');
-        const locText = document.getElementById('locText');
-        locText.textContent = '定位中...';
-        btn.disabled = true;
-
-        navigator.geolocation.getCurrentPosition(
-            pos => {
-                currentLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                const acc = Math.round(pos.coords.accuracy);
-                locText.textContent = `📍 已定位 (±${acc}m)`;
-                btn.disabled = false;
-                displayResults();
-                if (gmap) {
-                    gmap.setCenter(currentLocation);
-                    gmap.setZoom(15);
-                }
-            },
-            err => {
-                btn.disabled = false;
-                let msg = '定位失敗';
-                if (err.code === 1) msg = '請允許定位權限';
-                else if (err.code === 2) msg = '無法取得位置';
-                else if (err.code === 3) msg = '定位逾時，請重試';
-                locText.textContent = msg;
-                alert('定位失敗：' + msg + '\n\n請確認已開啟位置權限（設定 → 隱私權 → 位置服務）');
-            },
-            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-        );
-    }
-
-    function calculateDistance(lat1, lng1, lat2, lng2) {
-        const R = 6371, dLat = (lat2 - lat1) * Math.PI / 180, dLng = (lng2 - lng1) * Math.PI / 180;
-        const a = Math.sin(dLat/2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng/2) ** 2;
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) * 1000;
-    }
-
-    function search() { applyFilter(); }
-
-    function filterByTag(tag, e) {
-        currentTag = tag;
-        document.getElementById('searchInput').value = '';
-        document.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
-        if (e && e.target) e.target.classList.add('active');
-        displayResults();
-    }
-
-    function applyFilter() {
-        currentDistance = document.querySelector('input[name="distance"]:checked').value;
-        displayResults();
-    }
-
-    function getFilteredPlaces() {
-        const keyword = document.getElementById('searchInput').value.toLowerCase();
-        let results = allPlaces.filter(p =>
-            (!keyword || p.name.toLowerCase().includes(keyword) || p.type.toLowerCase().includes(keyword)) &&
-            (currentTag === '全部' || p.type === currentTag)
-        );
-        if (currentLocation) results = results.map(p => ({...p, distance: calculateDistance(currentLocation.lat, currentLocation.lng, p.lat, p.lng)})).sort((a, b) => a.distance - b.distance);
-        if (currentDistance !== 'all' && currentLocation) results = results.filter(p => p.distance <= parseInt(currentDistance));
-        return results;
-    }
-
-    function displayResults() {
-        const results = getFilteredPlaces();
-        document.getElementById('home').innerHTML = results.length ? results.map(p => `
-            <div class="item">
-                <div class="item-image">
-                    ${p.icon}
-                    <span class="rating-badge">${p.rating}</span>
-                    ${currentLocation && p.distance ? `<span class="distance-label">${p.distance < 1000 ? Math.round(p.distance) + 'm' : (p.distance/1000).toFixed(1) + 'km'}</span>` : ''}
-                </div>
-                <div class="item-info">
-                    <div class="item-name">${p.name} ${p.custom ? '<span class="custom-badge">自訂</span>' : ''} ${p.firebaseKey ? '<span class="cloud-badge">☁️</span>' : ''}</div>
-                    <div class="item-rating"><span class="stars">★ ${p.rating}</span> ${p.reviews ? `<span>(${p.reviews})</span>` : ''}</div>
-                    <div class="item-location">${p.price} · ${p.region}</div>
-                    <div class="item-desc">${p.desc || ''}</div>
-                    <div class="item-buttons">
-                        <button class="btn btn-detail">詳情</button>
-                        <button class="btn btn-route" onclick="openRoute(${p.lat}, ${p.lng})"><i class="fas fa-location-arrow"></i> 路線</button>
-                    </div>
-                </div>
-            </div>
-        `).join('') : '<div class="empty-state"><i class="fas fa-search"></i><p>無搜尋結果</p></div>';
-    }
-
-    function showTab(tab, e) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById(tab).classList.add('active');
-        document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
-        if (e && e.target && e.target.classList.contains('page-tab')) e.target.classList.add('active');
-
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        const navBtn = document.getElementById('nav-' + tab);
-        if (navBtn) navBtn.classList.add('active');
-
-        document.getElementById('quickTagsSection').style.display = tab === 'home' ? 'block' : 'none';
-        document.getElementById('filterSection').style.display = tab === 'home' ? 'block' : 'none';
-        document.getElementById('formActions').style.display = tab === 'add' ? 'flex' : 'none';
-
-        if (tab === 'home') displayResults();
-        else if (tab === 'filter') renderFilterTab();
-        else if (tab === 'myplaces') renderMyPlaces();
-        else if (tab === 'map') renderMap();
-    }
-
-    function renderFilterTab() {
-        let results = allPlaces.map(p => ({
-            ...p,
-            distance: currentLocation ? calculateDistance(currentLocation.lat, currentLocation.lng, p.lat, p.lng) : null
-        })).sort((a, b) => (a.distance || 999999) - (b.distance || 999999));
-
-        document.getElementById('itemsList2').innerHTML = results.length ? results.map(p => `
-            <div class="item">
-                <div class="item-image">${p.icon}<span class="rating-badge">${p.rating}</span>${p.distance ? `<span class="distance-label">${p.distance < 1000 ? Math.round(p.distance) + 'm' : (p.distance/1000).toFixed(1) + 'km'}</span>` : ''}</div>
-                <div class="item-info">
-                    <div class="item-name">${p.name}</div>
-                    <div class="item-rating"><span class="stars">★ ${p.rating}</span></div>
-                    <div class="item-location">${p.price} · ${p.region}</div>
-                    <div class="item-desc">${p.desc || ''}</div>
-                </div>
-            </div>
-        `).join('') : '<div class="empty-state"><p>請先定位</p></div>';
-    }
-
-    function renderMyPlaces() {
-        const custom = allPlaces.filter(p => p.custom);
-        document.getElementById('myplaces').innerHTML = custom.length ? custom.map(p => `
-            <div class="item" style="border-left: 3px solid #ff9800;">
-                <div class="item-image" style="background: linear-gradient(135deg, #ffe0b2 0%, #ffcc80 100%);">
-                    ${p.icon}
-                    <span class="rating-badge" style="background: #ff9800;">自訂</span>
-                    ${p.firebaseKey ? '<span class="distance-label" style="background:#1565c0">☁️ 雲端</span>' : ''}
-                </div>
-                <div class="item-info">
-                    <div class="item-name">${p.name}</div>
-                    <div class="item-rating"><span class="stars">★ ${p.rating}</span></div>
-                    <div class="item-location">${p.price} · ${p.region}</div>
-                    <div class="item-buttons">
-                        <button class="btn btn-route" onclick="openRoute(${p.lat}, ${p.lng})"><i class="fas fa-location-arrow"></i> 路線</button>
-                        <button class="btn btn-delete" onclick="deletePlace('${p.name}', '${p.firebaseKey || ''}')"><i class="fas fa-trash"></i> 刪除</button>
-                    </div>
-                </div>
-            </div>
-        `).join('') : '<div class="empty-state"><i class="fas fa-map-pin"></i><p>尚無自訂景點<br><small>登入後可雲端同步</small></p></div>';
-    }
-
-    let gmap = null;
-    let gmarkers = [];
-
-    function renderMap() {
-        setTimeout(() => {
-            const mapEl = document.getElementById('googleMap');
-            const center = currentLocation || { lat: 1.3521, lng: 103.8198 };
-
-            if (!gmap) {
-                gmap = new google.maps.Map(mapEl, { zoom: 13, center });
-            } else {
-                gmap.setCenter(center);
-            }
-
-            gmarkers.forEach(m => m.setMap(null));
-            gmarkers = [];
-
-            allPlaces.forEach(place => {
-                const marker = new google.maps.Marker({
-                    position: { lat: place.lat, lng: place.lng },
-                    map: gmap,
-                    title: place.name,
-                    icon: place.custom
-                        ? 'http://maps.google.com/mapfiles/ms/icons/orange-dot.png'
-                        : 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'
-                });
-                const infoWindow = new google.maps.InfoWindow({
-                    content: `<div style="padding:8px;max-width:180px;">
-                        <strong>${place.name}</strong><br>
-                        <span style="color:#999;font-size:11px;">${place.type} · ${place.price} · ${place.region}</span><br>
-                        <span style="font-size:11px;color:#f5a623;">★ ${place.rating}</span>
-                        ${place.desc ? `<p style="font-size:11px;margin-top:4px;">${place.desc}</p>` : ''}
-                        <a href="https://maps.google.com/maps?daddr=${place.lat},${place.lng}" target="_blank" style="font-size:11px;color:#d95b37;">導航 →</a>
-                    </div>`
-                });
-                marker.addListener('click', () => {
-                    gmarkers.forEach(m => m._iw && m._iw.close());
-                    infoWindow.open(gmap, marker);
-                    marker._iw = infoWindow;
-                });
-                gmarkers.push(marker);
-            });
-
-            if (currentLocation) {
-                new google.maps.Marker({
-                    position: currentLocation,
-                    map: gmap,
-                    title: '我的位置',
-                    icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
-                });
-            }
-        }, 100);
-    }
-
-    function savePlace() {
-        const place = {
-            name: document.getElementById('fName').value.trim(),
-            country: document.getElementById('fCountry').value.trim(),
-            region: document.getElementById('fRegion').value.trim(),
-            type: document.getElementById('fType').value,
-            price: document.getElementById('fPrice').value,
-            address: document.getElementById('fAddress').value.trim(),
-            lat: parseFloat(document.getElementById('fLat').value),
-            lng: parseFloat(document.getElementById('fLng').value),
-            rating: parseFloat(document.getElementById('fRating').value) || 4,
-            reviews: 0,
-            desc: document.getElementById('fDesc').value.trim(),
-            icon: '📍',
-            custom: true
-        };
-
-        if (!place.name || !place.lat || !place.lng) { alert('請填寫名稱、緯度和經度'); return; }
-
-        if (currentUser) {
-            savePlaceToFirebase(place);
-        } else {
-            customPlaces.push(place);
-            localStorage.setItem('localBitePlaces', JSON.stringify(customPlaces));
-            allPlaces = [...defaultPlaces, ...customPlaces];
-        }
-
-        ['fName','fAddress','fDesc','fLat','fLng'].forEach(id => document.getElementById(id).value = '');
-        alert(currentUser ? '✅ 新增成功！已雲端同步 ☁️' : '✅ 新增成功！（登入後可雲端同步）');
-        showTab('home', null);
-    }
-
-    function deletePlace(name, firebaseKey) {
-        if (!confirm('確定刪除「' + name + '」？')) return;
-        if (currentUser && firebaseKey) {
-            deletePlaceFromFirebase(firebaseKey);
-        } else {
-            customPlaces = customPlaces.filter(p => p.name !== name);
-            localStorage.setItem('localBitePlaces', JSON.stringify(customPlaces));
-            allPlaces = [...defaultPlaces, ...customPlaces];
-            renderMyPlaces();
-            displayResults();
-        }
-    }
-
-    function openRoute(lat, lng) {
-        window.open(`https://maps.google.com/maps?daddr=${lat},${lng}`, '_blank');
-    }
-
-    function toggleFilter() {
-        const content = document.getElementById('filterContent');
-        content.classList.toggle('show');
-        document.getElementById('filterToggle').textContent = content.classList.contains('show') ? '▲' : '▼';
-    }
-
-    function exportData() {
-        const data = JSON.stringify(allPlaces.filter(p => p.custom), null, 2);
-        const blob = new Blob([data], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `localbite-${new Date().toISOString().slice(0,10)}.json`;
-        link.click();
-        URL.revokeObjectURL(url);
-    }
-
-    displayResults();
-</script>
-
-</body>
-</html>
+                        <div class="form
