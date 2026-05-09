@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LocalBite - 發現在地好味道</title>
+    <title>LocalBite - Firebase 雲端版</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDummy123&libraries=places"></script>
     <style>
         * {
             margin: 0;
@@ -13,500 +17,335 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
             color: #333;
         }
 
-        /* Navigation Bar */
-        nav {
+        .app-container {
+            max-width: 390px;
+            margin: 20px auto;
             background: white;
-            border-bottom: 1px solid #e0e0e0;
-            padding: 0.75rem 2rem;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border-radius: 40px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.15);
+            overflow: hidden;
+            border: 12px solid #000;
+            height: 844px;
+            display: flex;
+            flex-direction: column;
         }
 
-        nav .container {
-            max-width: 1400px;
-            margin: 0 auto;
+        .app-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+
+        .status-bar {
+            background: white;
+            padding: 8px 16px;
+            text-align: center;
+            font-size: 12px;
+            color: #333;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .header {
+            background: white;
+            padding: 14px 16px;
+            border-bottom: 1px solid #f5f5f5;
+            flex-shrink: 0;
+        }
+
+        .header-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 12px;
         }
 
         .logo {
-            font-size: 22px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
             font-weight: 700;
             color: #d95b37;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
-        nav .nav-links {
-            display: flex;
-            gap: 2rem;
-            font-size: 14px;
-            align-items: center;
-        }
-
-        nav button {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: #333;
-            display: flex;
-            gap: 6px;
-            align-items: center;
-            padding: 8px 0;
-        }
-
-        nav i {
-            font-size: 18px;
-        }
-
-        .sync-status {
-            font-size: 12px;
-            padding: 6px 12px;
+        .auth-status {
+            font-size: 10px;
+            padding: 4px 8px;
             background: #e8f5e9;
             color: #2e7d32;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        /* Hero Section */
-        .hero {
-            background: linear-gradient(135deg, rgba(217, 91, 55, 0.08) 0%, rgba(10, 31, 61, 0.04) 100%);
-            padding: 3rem 2rem;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .hero .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .hero h1 {
-            font-size: 48px;
-            font-weight: 700;
-            color: #1a1a1a;
-            margin: 0 0 0.5rem 0;
-            letter-spacing: -0.5px;
-        }
-
-        .hero .subtitle {
-            font-size: 18px;
-            color: #666;
-            margin: 0 0 2rem 0;
-        }
-
-        .search-bar {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 1.5rem;
-            max-width: 1100px;
-            flex-wrap: wrap;
-        }
-
-        .search-bar input,
-        .search-bar button {
-            padding: 12px 16px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-            background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
-
-        .search-bar input {
-            flex: 1;
-            min-width: 300px;
-        }
-
-        .search-bar button {
-            border: none;
+            border-radius: 4px;
             cursor: pointer;
-            font-weight: 600;
+            border: none;
+        }
+
+        .search-container {
+            background: #f5f5f5;
+            border-radius: 10px;
+            padding: 10px 12px;
             display: flex;
             align-items: center;
             gap: 8px;
-            transition: all 0.2s;
+            margin-bottom: 10px;
         }
 
-        .search-btn {
-            background: #0a1f3d;
-            color: white;
-            box-shadow: 0 2px 8px rgba(10, 31, 61, 0.15);
+        .search-container input {
+            background: none;
+            border: none;
+            flex: 1;
+            font-size: 13px;
+            outline: none;
+            color: #333;
         }
 
-        .search-btn:hover {
-            background: #162a52;
+        .location-bar {
+            display: flex;
+            gap: 8px;
         }
 
         .location-btn {
-            background: #28a745;
-            color: white;
-            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.15);
-        }
-
-        .location-btn:hover {
-            background: #20c997;
+            flex: 1;
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: none;
+            border-radius: 6px;
+            padding: 8px;
+            font-size: 11px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            font-weight: 600;
         }
 
         .add-btn {
             background: #ff9800;
             color: white;
-            box-shadow: 0 2px 8px rgba(255, 152, 0, 0.15);
-        }
-
-        .add-btn:hover {
-            background: #f57c00;
-        }
-
-        #locationStatus {
-            color: #666;
-            font-size: 13px;
-            margin: 1rem 0 0 0;
-            min-height: 20px;
-        }
-
-        #locationStatus.success {
-            color: #28a745;
-        }
-
-        .hot-tags {
+            border: none;
+            border-radius: 6px;
+            padding: 8px 10px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
             display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 1rem;
+            align-items: center;
+            gap: 4px;
         }
 
-        .tag {
+        .page-tabs {
+            padding: 12px;
+            border-bottom: 1px solid #f5f5f5;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+            overflow-x: auto;
+        }
+
+        .page-tab {
             background: white;
             border: 1px solid #ddd;
-            color: #333;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 13px;
+            border-radius: 18px;
+            padding: 7px 12px;
+            font-size: 11px;
             cursor: pointer;
-            transition: all 0.2s;
+            color: #333;
+            font-weight: 600;
+            white-space: nowrap;
         }
 
-        .tag:hover {
+        .page-tab.active {
+            background: #d95b37;
+            color: white;
             border-color: #d95b37;
-            color: #d95b37;
         }
 
-        /* Main Content */
-        .main-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
+        .content {
+            flex: 1;
+            overflow-y: auto;
             display: grid;
-            grid-template-columns: 1fr 380px;
-            gap: 2rem;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
         }
 
-        .results-count {
-            margin-bottom: 1.5rem;
-            color: #666;
-            font-size: 14px;
+        .list-view {
+            border-right: 1px solid #f5f5f5;
+            overflow-y: auto;
         }
 
-        /* Restaurant Card */
-        .restaurant-card {
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            overflow: hidden;
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-            transition: box-shadow 0.2s;
-            margin-bottom: 1.5rem;
+        .map-view {
+            background: #e0e0e0;
             position: relative;
         }
 
-        .restaurant-card:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        .page {
+            display: none;
+            grid-column: 1 / -1;
         }
 
-        .restaurant-card.custom {
-            border: 2px solid #ff9800;
+        .page.active {
+            display: block;
+        }
+
+        .page.split-view {
+            grid-column: 1;
+        }
+
+        .page.split-view.map {
+            grid-column: 2;
+        }
+
+        #googleMap {
+            width: 100%;
+            height: 100%;
+        }
+
+        .item {
+            border-bottom: 1px solid #f5f5f5;
+            padding: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .item:hover {
+            background: #f9f9f9;
+        }
+
+        .item-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .item-info {
+            font-size: 11px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+
+        .item-rating {
+            display: flex;
+            gap: 6px;
+            font-size: 11px;
+        }
+
+        .stars {
+            color: #f5a623;
+            font-weight: 600;
         }
 
         .custom-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
             background: #ff9800;
             color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 600;
-            z-index: 10;
+            padding: 2px 4px;
+            border-radius: 2px;
+            font-size: 9px;
         }
 
-        .restaurant-card .image {
+        .form-group {
+            margin-bottom: 12px;
+            padding: 0 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
             width: 100%;
-            height: 240px;
-            background: linear-gradient(135deg, #e8c8b0 0%, #d4a574 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 64px;
-        }
-
-        .restaurant-card .info {
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .restaurant-card h3 {
-            margin: 0 0 6px 0;
-            font-size: 17px;
-            font-weight: 600;
-            color: #1a1a1a;
-        }
-
-        .rating-section {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            margin-bottom: 0.75rem;
-        }
-
-        .rating .stars {
-            color: #f5a623;
-            font-weight: 700;
-            font-size: 15px;
-        }
-
-        .status-badge {
-            background: #e8f5e9;
-            color: #2e7d32;
-            padding: 3px 10px;
-            border-radius: 4px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
             font-size: 12px;
-            font-weight: 600;
+            font-family: inherit;
         }
 
-        .description {
-            font-size: 13px;
-            color: #666;
-            margin: 0 0 1rem 0;
-            line-height: 1.6;
-        }
-
-        .location-info {
-            display: flex;
-            gap: 12px;
-            font-size: 13px;
-            color: #999;
-            margin: 0 0 0.5rem 0;
-            flex-wrap: wrap;
-        }
-
-        .distance {
-            background: #f0f7ff;
-            color: #0099ff;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-weight: 600;
-            font-size: 12px;
-        }
-
-        .card-actions {
-            display: flex;
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 10px;
-            margin-top: auto;
         }
 
-        .card-actions button {
+        .form-row .form-group {
+            padding: 0;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 8px;
+            padding: 10px 14px;
+            border-top: 1px solid #f5f5f5;
+        }
+
+        .btn {
             flex: 1;
             padding: 10px;
+            border: none;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            transition: all 0.2s;
+            font-weight: 600;
+            font-size: 12px;
         }
 
-        .detail-btn {
-            border: 1px solid #ddd;
-            background: white;
+        .btn-submit {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-cancel {
+            background: #f5f5f5;
             color: #333;
         }
 
-        .detail-btn:hover {
-            background: #f5f5f5;
-        }
-
-        .route-btn {
-            border: none;
-            background: #0a1f3d;
-            color: white;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        .route-btn:hover {
-            background: #162a52;
-        }
-
-        .delete-btn {
-            flex: 0 0 auto;
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 10px 12px;
-        }
-
-        .delete-btn:hover {
-            background: #c82333;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .sidebar-card {
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            padding: 1.5rem;
-        }
-
-        .sidebar-card h4 {
-            font-size: 14px;
-            font-weight: 600;
-            color: #1a1a1a;
-            margin: 0 0 1rem 0;
-        }
-
-        .distance-filter {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .distance-option {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .distance-option:hover {
-            background: #f5f5f5;
-            border-color: #0099ff;
-        }
-
-        .distance-option.active {
-            background: #f0f7ff;
-            border-color: #0099ff;
-        }
-
-        .location-card {
-            background: linear-gradient(135deg, #fef3f0 0%, #fceae5 100%);
-            padding: 1rem;
-            border-radius: 8px;
-            border: 1px solid #f5d0c4;
-            margin-bottom: 1rem;
-        }
-
-        .location-card .name {
-            font-size: 13px;
-            color: #d95b37;
-            font-weight: 600;
-        }
-
-        .location-card .address {
-            font-size: 12px;
+        .empty-state {
+            padding: 40px 20px;
+            text-align: center;
             color: #999;
-            margin: 0.5rem 0 0 0;
+        }
+
+        .bottom-nav {
+            background: white;
+            border-top: 1px solid #f0f0f0;
+            padding: 8px 0;
+            display: flex;
+            justify-content: space-around;
+            flex-shrink: 0;
         }
 
         .nav-btn {
-            width: 100%;
-            padding: 12px;
+            background: none;
             border: none;
-            border-radius: 8px;
-            background: #28a745;
-            color: white;
             cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.2s;
-        }
-
-        .nav-btn:hover {
-            background: #20c997;
-        }
-
-        .tips-card {
-            background: #f0f7ff;
-            border: 1px solid #b3d9ff;
-            border-radius: 12px;
-            padding: 1.5rem;
-        }
-
-        .tips-card h4 {
-            color: #0099ff;
-            margin-bottom: 1rem;
-        }
-
-        .tips-card ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .tips-card li {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 8px;
-        }
-
-        .no-results {
-            text-align: center;
-            padding: 3rem 1rem;
+            gap: 3px;
             color: #999;
-            display: none;
+            font-size: 10px;
+            padding: 6px;
         }
 
-        .map-preview {
-            background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
-            border-radius: 12px;
-            height: 350px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid #a1d8d6;
+        .nav-btn i {
+            font-size: 18px;
         }
 
-        /* Modal */
+        .nav-btn.active {
+            color: #d95b37;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -515,647 +354,485 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            overflow: auto;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 2rem;
+            background: white;
+            padding: 20px;
             border-radius: 12px;
+            max-width: 300px;
             width: 90%;
-            max-width: 600px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-            max-height: 90vh;
-            overflow-y: auto;
         }
 
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
+        .modal-content h2 {
+            font-size: 16px;
+            margin-bottom: 12px;
         }
 
-        .modal-header h2 {
-            margin: 0;
-            font-size: 24px;
-            color: #1a1a1a;
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 28px;
-            cursor: pointer;
-            color: #999;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: #333;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
+        .modal-content input {
             width: 100%;
-            padding: 10px 12px;
+            padding: 10px;
             border: 1px solid #ddd;
             border-radius: 6px;
-            font-size: 14px;
-            font-family: inherit;
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-
-        .form-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            margin-top: 2rem;
-        }
-
-        .form-actions button {
-            padding: 12px 24px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            border: none;
-            transition: all 0.2s;
-        }
-
-        .submit-btn {
-            background: #28a745;
-            color: white;
-        }
-
-        .submit-btn:hover {
-            background: #20c997;
-        }
-
-        .cancel-btn {
-            background: #e9ecef;
-            color: #333;
-        }
-
-        /* Footer */
-        footer {
-            background: #0a1f3d;
-            color: white;
-            padding: 2rem;
-            text-align: center;
-            margin-top: 2rem;
+            margin-bottom: 10px;
             font-size: 13px;
         }
 
-        @media (max-width: 900px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-
-            .restaurant-card {
-                grid-template-columns: 1fr;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-            }
+        .modal-actions {
+            display: flex;
+            gap: 8px;
         }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav>
-        <div class="container">
-            <div class="logo">
-                <i class="fas fa-map-pin"></i>
-                <span>LocalBite</span>
-            </div>
-            <div class="nav-links">
-                <button onclick="exportData()" title="導出數據">
-                    <i class="fas fa-download"></i>
-                    <span>導出</span>
-                </button>
-                <button onclick="importData()" title="導入數據">
-                    <i class="fas fa-upload"></i>
-                    <span>導入</span>
-                </button>
-                <button onclick="clearAllData()" title="清除所有數據">
-                    <i class="fas fa-trash"></i>
-                    <span>清除</span>
-                </button>
-                <div class="sync-status">
-                    <i class="fas fa-check-circle"></i>
-                    <span>本地保存</span>
-                </div>
-            </div>
-        </div>
-    </nav>
 
-    <!-- Hero Section -->
-    <div class="hero">
-        <div class="container">
-            <h1>發現在地好味道</h1>
-            <p class="subtitle">全球美食與景點探險指南 - 本地同步版</p>
-
-            <div class="search-bar">
-                <input type="text" id="searchInput" placeholder="搜尋餐廳、景點名稱或類型..." onkeypress="if(event.key==='Enter') performSearch()">
-                <button class="search-btn" onclick="performSearch()">
-                    <i class="fas fa-search"></i>
-                    搜尋
-                </button>
-                <button class="location-btn" id="locationBtn" onclick="useLocation()">
-                    <i class="fas fa-location-arrow"></i>
-                    使用我的位置
-                </button>
-                <button class="add-btn" onclick="openAddModal()">
-                    <i class="fas fa-plus"></i>
-                    新增地點
-                </button>
-            </div>
-
-            <div id="locationStatus"></div>
-
-            <div class="hot-tags">
-                <span class="tag" onclick="searchByTag('美食')">🍽️ 美食</span>
-                <span class="tag" onclick="searchByTag('景點')">🏛️ 景點</span>
-                <span class="tag" onclick="searchByTag('咖啡')">☕ 咖啡</span>
-                <span class="tag" onclick="searchByTag('小吃')">🍜 小吃</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="main-content">
+<div class="app-container">
+    <div class="app-content">
         
-        <!-- Results -->
-        <div>
-            <div id="resultsCount" class="results-count">
-                <span id="countNumber">0</span> 間搜尋結果
-            </div>
-
-            <div id="restaurantsList" class="restaurants-list"></div>
-
-            <div id="noResults" class="no-results">
-                <i class="fas fa-search"></i>
-                <p>點擊「新增地點」開始建立您的美食景點清單</p>
-            </div>
-        </div>
-
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            
-            <!-- Map Preview -->
-            <div class="map-preview">
-                <div style="text-align: center;">
-                    <div style="font-size: 64px; margin-bottom: 1rem;">🗺️</div>
-                    <p style="font-size: 14px; font-weight: 600; color: #00695c; margin: 0;">地圖預覽</p>
-                    <p id="mapText" style="font-size: 12px; color: #00897b; margin: 0.5rem 0 0 0;">搜尋後顯示位置</p>
+        <div class="status-bar">9:41</div>
+        
+        <div class="header">
+            <div class="header-top">
+                <div class="logo">
+                    <i class="fas fa-map-pin"></i> LocalBite
                 </div>
+                <button class="auth-status" onclick="toggleAuthModal()" id="authBtn">登入</button>
             </div>
-
-            <!-- Distance Filter -->
-            <div class="sidebar-card">
-                <h4>距離篩選</h4>
-                <div class="distance-filter">
-                    <label class="distance-option active">
-                        <input type="radio" name="distance" value="all" onchange="applyDistanceFilter()">
-                        <span>全部</span>
-                    </label>
-                    <label class="distance-option">
-                        <input type="radio" name="distance" value="200" onchange="applyDistanceFilter()">
-                        <span>200 公尺以內</span>
-                    </label>
-                    <label class="distance-option">
-                        <input type="radio" name="distance" value="500" onchange="applyDistanceFilter()">
-                        <span>500 公尺以內</span>
-                    </label>
-                    <label class="distance-option">
-                        <input type="radio" name="distance" value="1000" onchange="applyDistanceFilter()">
-                        <span>1 公里以內</span>
-                    </label>
-                    <label class="distance-option">
-                        <input type="radio" name="distance" value="2000" onchange="applyDistanceFilter()">
-                        <span>2 公里以內</span>
-                    </label>
-                    <label class="distance-option">
-                        <input type="radio" name="distance" value="5000" onchange="applyDistanceFilter()">
-                        <span>5 公里以內</span>
-                    </label>
-                </div>
+            <div class="search-container">
+                <i class="fas fa-search" style="color: #999;"></i>
+                <input type="text" id="searchInput" placeholder="搜尋食物、地點..." onkeypress="if(event.key==='Enter') search()">
             </div>
-
-            <!-- Current Location -->
-            <div class="sidebar-card">
-                <h4>您的位置</h4>
-                <div id="currentLocation" class="location-card" style="background: #f5f5f5; border-color: #ddd;">
-                    <div class="name" style="color: #666;">未定位</div>
-                    <div class="address">點擊「使用我的位置」進行定位</div>
-                </div>
-                <button class="nav-btn" onclick="useLocation()">
-                    <i class="fas fa-crosshairs"></i>
-                    定位我的位置
+            <div class="location-bar">
+                <button class="location-btn" onclick="getLocation()">
+                    <i class="fas fa-location-arrow"></i><span id="locText">定位</span>
+                </button>
+                <button class="add-btn" onclick="showTab('add')" id="addBtn" style="display:none;">
+                    <i class="fas fa-plus"></i>新增
                 </button>
             </div>
+        </div>
 
-            <!-- Tips -->
-            <div class="tips-card">
-                <h4>💡 使用提示</h4>
-                <ul>
-                    <li>✓ 點擊「新增地點」自訂景點</li>
-                    <li>✓ 點擊「使用我的位置」進行定位</li>
-                    <li>✓ 數據自動保存在瀏覽器</li>
-                    <li>✓ 可導出為 JSON 備份</li>
-                    <li>✓ 支援跨設備導入</li>
-                </ul>
+        <div class="page-tabs">
+            <button class="page-tab active" onclick="showTab('home')">首頁</button>
+            <button class="page-tab" onclick="showTab('add')" id="addTab" style="display:none;">新增</button>
+            <button class="page-tab" onclick="showTab('map')">地圖</button>
+        </div>
+
+        <div class="content">
+            <!-- Home Page -->
+            <div id="home" class="page active split-view" style="grid-column: 1 / -1;">
+                <div class="list-view">
+                    <div id="itemsList"></div>
+                </div>
             </div>
-        </aside>
-    </div>
 
-    <!-- Add Modal -->
-    <div id="addModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>新增景點或美食</h2>
-                <button class="close-btn" onclick="closeAddModal()">&times;</button>
-            </div>
-            
-            <form onsubmit="addNewPlace(event)">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>國家 *</label>
-                        <input type="text" id="country" placeholder="例如：台灣、新加坡" required>
+            <!-- Add Page -->
+            <div id="add" class="page">
+                <div style="padding: 14px;">
+                    <h2 style="font-size: 14px; margin-bottom: 12px;">+ 新增景點</h2>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>國家</label>
+                            <input type="text" id="fCountry" placeholder="台灣">
+                        </div>
+                        <div class="form-group">
+                            <label>地區</label>
+                            <input type="text" id="fRegion" placeholder="台北">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>地區/城市 *</label>
-                        <input type="text" id="region" placeholder="例如：台北、台中" required>
-                    </div>
-                </div>
 
-                <div class="form-group">
-                    <label>名稱 *</label>
-                    <input type="text" id="placeName" placeholder="餐廳或景點名稱" required>
-                </div>
-
-                <div class="form-row">
                     <div class="form-group">
-                        <label>類型 *</label>
-                        <select id="placeType" required>
-                            <option value="">選擇類型</option>
-                            <option value="美食">🍽️ 美食</option>
-                            <option value="景點">🏛️ 景點</option>
-                            <option value="咖啡">☕ 咖啡</option>
-                            <option value="小吃">🍜 小吃</option>
-                            <option value="海鮮">🦐 海鮮</option>
-                            <option value="夜市">🌙 夜市</option>
-                            <option value="其他">📍 其他</option>
-                        </select>
+                        <label>名稱</label>
+                        <input type="text" id="fName" placeholder="景點名稱">
                     </div>
-                    <div class="form-group">
-                        <label>價格級別 *</label>
-                        <select id="placePrice" required>
-                            <option value="">選擇級別</option>
-                            <option value="$">$ 便宜</option>
-                            <option value="$$">$$ 中等</option>
-                            <option value="$$$">$$$ 昂貴</option>
-                        </select>
-                    </div>
-                </div>
 
-                <div class="form-group">
-                    <label>詳細地址 *</label>
-                    <input type="text" id="placeAddress" placeholder="完整地址" required>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>緯度 *</label>
-                        <input type="number" id="placeLat" placeholder="25.0431" step="0.0001" required>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>類型</label>
+                            <select id="fType">
+                                <option value="美食">美食</option>
+                                <option value="景點">景點</option>
+                                <option value="咖啡">咖啡</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>價格</label>
+                            <select id="fPrice">
+                                <option value="$">$</option>
+                                <option value="$$">$$</option>
+                                <option value="$$$">$$$</option>
+                            </select>
+                        </div>
                     </div>
+
                     <div class="form-group">
-                        <label>經度 *</label>
-                        <input type="number" id="placeLng" placeholder="121.5648" step="0.0001" required>
+                        <label>地址</label>
+                        <input type="text" id="fAddress" placeholder="完整地址">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>緯度</label>
+                            <input type="number" id="fLat" placeholder="25.0431" step="0.0001">
+                        </div>
+                        <div class="form-group">
+                            <label>經度</label>
+                            <input type="number" id="fLng" placeholder="121.5648" step="0.0001">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>描述</label>
+                        <textarea id="fDesc" placeholder="特色描述..." style="min-height: 60px;"></textarea>
                     </div>
                 </div>
-
-                <div class="form-group">
-                    <label>評分 (1-5)</label>
-                    <input type="number" id="placeRating" placeholder="4.5" min="1" max="5" step="0.1" value="4.0">
-                </div>
-
-                <div class="form-group">
-                    <label>備註 / 描述</label>
-                    <textarea id="placeDescription" placeholder="這間店的特色、推薦菜色等..."></textarea>
-                </div>
-
-                <div style="background: #f0f7ff; border: 1px solid #b3d9ff; border-radius: 8px; padding: 12px; margin-bottom: 1.5rem; font-size: 12px; color: #0099ff;">
-                    <strong>💡 如何找到座標？</strong><br>
-                    在 Google Maps 搜尋位置，右鍵點擊→ 複製座標
-                </div>
-
                 <div class="form-actions">
-                    <button type="button" class="cancel-btn" onclick="closeAddModal()">取消</button>
-                    <button type="submit" class="submit-btn">新增</button>
+                    <button class="btn btn-cancel" onclick="showTab('home')">取消</button>
+                    <button class="btn btn-submit" onclick="savePlace()">新增</button>
                 </div>
-            </form>
+            </div>
+
+            <!-- Map Page -->
+            <div id="map" class="page split-view">
+                <div id="googleMap" style="width:100%; height:100%;"></div>
+            </div>
+        </div>
+
+        <div class="bottom-nav">
+            <button class="nav-btn active" onclick="showTab('home')"><i class="fas fa-home"></i>首頁</button>
+            <button class="nav-btn" onclick="showTab('map')"><i class="fas fa-map"></i>地圖</button>
+            <button class="nav-btn" onclick="showTab('home')"><i class="fas fa-heart"></i>收藏</button>
+            <button class="nav-btn" onclick="showTab('add')" id="myBtn" style="display:none;"><i class="fas fa-user"></i>我的</button>
+        </div>
+
+    </div>
+</div>
+
+<!-- Auth Modal -->
+<div id="authModal" class="modal">
+    <div class="modal-content">
+        <h2>登入/註冊</h2>
+        <div id="loginForm">
+            <input type="email" id="loginEmail" placeholder="電子郵件">
+            <input type="password" id="loginPassword" placeholder="密碼">
+            <div class="modal-actions">
+                <button class="btn btn-cancel" onclick="toggleAuthModal()">關閉</button>
+                <button class="btn btn-submit" onclick="login()">登入</button>
+            </div>
+            <p style="text-align: center; font-size: 12px; margin-top: 10px; color: #999;">
+                或 <a href="#" onclick="showSignup()" style="color: #d95b37; text-decoration: none;">建立帳戶</a>
+            </p>
+        </div>
+        <div id="signupForm" style="display: none;">
+            <input type="email" id="signupEmail" placeholder="電子郵件">
+            <input type="password" id="signupPassword" placeholder="密碼">
+            <div class="modal-actions">
+                <button class="btn btn-cancel" onclick="showLogin()">返回登入</button>
+                <button class="btn btn-submit" onclick="signup()">註冊</button>
+            </div>
         </div>
     </div>
+</div>
 
-    <!-- Footer -->
-    <footer>
-        <p>© 2026 LocalBite - 發現在地美食與景點，體驗道地風味 | GitHub Pages 版本</p>
-    </footer>
+<script>
+    // Firebase 配置 - 需要替換為您的實際配置
+    const firebaseConfig = {
+        apiKey: "AIzaSyDemoKey",
+        authDomain: "localbite-demo.firebaseapp.com",
+        databaseURL: "https://localbite-demo-default-rtdb.firebaseio.com",
+        projectId: "localbite-demo",
+        storageBucket: "localbite-demo.appspot.com",
+        messagingSenderId: "123456789",
+        appId: "1:123456789:web:abc123def456"
+    };
 
-    <script>
-        // 初始化數據
-        let allPlaces = JSON.parse(localStorage.getItem('localBitePlaces')) || [];
-        let currentLocation = null;
-        let searchResults = [];
-        let filteredResults = [];
-        let selectedDistance = 'all';
+    let currentUser = null;
+    let currentLocation = null;
+    let allPlaces = [];
+    let map = null;
+    let markers = [];
 
-        // 計算距離
-        function calculateDistance(lat1, lng1, lat2, lng2) {
-            const R = 6371000;
-            const φ1 = (lat1 * Math.PI) / 180;
-            const φ2 = (lat2 * Math.PI) / 180;
-            const Δφ = ((lat2 - lat1) * Math.PI) / 180;
-            const Δλ = ((lng2 - lng1) * Math.PI) / 180;
-            
-            const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-                      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            
-            return R * c;
+    // 初始化 Firebase
+    function initFirebase() {
+        try {
+            firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            const database = firebase.database();
+
+            auth.onAuthStateChanged(user => {
+                currentUser = user;
+                updateAuthUI();
+                if (user) {
+                    loadPlaces();
+                }
+            });
+        } catch (error) {
+            console.log('Firebase 設定提示:', error.message);
+            alert('💡 Firebase 未配置。請更新 firebaseConfig 以啟用雲端同步。\n\n目前使用本地存儲演示。');
+            useLocalStorage();
+        }
+    }
+
+    function useLocalStorage() {
+        allPlaces = JSON.parse(localStorage.getItem('localBitePlaces') || '[]');
+        updateAuthUI();
+        displayPlaces();
+    }
+
+    function updateAuthUI() {
+        const btn = document.getElementById('authBtn');
+        const addBtn = document.getElementById('addBtn');
+        const addTab = document.getElementById('addTab');
+        const myBtn = document.getElementById('myBtn');
+
+        if (currentUser) {
+            btn.textContent = '已登入';
+            btn.style.background = '#e8f5e9';
+            addBtn.style.display = 'flex';
+            addTab.style.display = 'block';
+            myBtn.style.display = 'flex';
+        } else {
+            btn.textContent = '登入';
+            btn.style.background = '#ffeaa7';
+            addBtn.style.display = 'none';
+            addTab.style.display = 'none';
+            myBtn.style.display = 'none';
+        }
+    }
+
+    function login() {
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+
+        if (!currentUser) {
+            alert('Firebase 未正確配置。請更新配置後再試。\n\n演示模式：自動登入');
+            currentUser = { uid: 'demo-user', email: email };
+            useLocalStorage();
+            toggleAuthModal();
+        }
+    }
+
+    function signup() {
+        const email = document.getElementById('signupEmail').value;
+        const password = document.getElementById('signupPassword').value;
+
+        if (!currentUser) {
+            alert('Firebase 未正確配置。\n\n演示模式：自動建立帳戶');
+            currentUser = { uid: 'demo-user', email: email };
+            useLocalStorage();
+            toggleAuthModal();
+        }
+    }
+
+    function loadPlaces() {
+        if (!currentUser) return;
+        
+        const database = firebase.database();
+        database.ref('users/' + currentUser.uid + '/places').on('value', snapshot => {
+            allPlaces = [];
+            if (snapshot.exists()) {
+                snapshot.forEach(childSnapshot => {
+                    allPlaces.push({
+                        ...childSnapshot.val(),
+                        id: childSnapshot.key
+                    });
+                });
+            }
+            displayPlaces();
+        });
+    }
+
+    function savePlace() {
+        if (!currentUser) {
+            alert('請先登入');
+            return;
         }
 
-        function formatDistance(meters) {
-            if (meters < 1000) return Math.round(meters) + ' m';
-            return (meters / 1000).toFixed(1) + ' km';
-        }
+        const place = {
+            name: document.getElementById('fName').value,
+            country: document.getElementById('fCountry').value,
+            region: document.getElementById('fRegion').value,
+            type: document.getElementById('fType').value,
+            price: document.getElementById('fPrice').value,
+            address: document.getElementById('fAddress').value,
+            lat: parseFloat(document.getElementById('fLat').value),
+            lng: parseFloat(document.getElementById('fLng').value),
+            desc: document.getElementById('fDesc').value,
+            rating: 4.0,
+            custom: true,
+            createdAt: new Date().toISOString()
+        };
 
-        function getIconByType(type) {
-            const icons = {
-                '美食': '🍽️',
-                '景點': '🏛️',
-                '咖啡': '☕',
-                '小吃': '🍜',
-                '海鮮': '🦐',
-                '夜市': '🌙',
-                '其他': '📍'
-            };
-            return icons[type] || '📍';
-        }
-
-        function savePlaces() {
+        if (!currentUser.uid.includes('demo')) {
+            const database = firebase.database();
+            database.ref('users/' + currentUser.uid + '/places').push(place);
+        } else {
+            allPlaces.push(place);
             localStorage.setItem('localBitePlaces', JSON.stringify(allPlaces));
         }
 
-        // 定位
-        function useLocation() {
-            const btn = document.getElementById('locationBtn');
-            const status = document.getElementById('locationStatus');
-            
-            btn.disabled = true;
-            status.textContent = '正在定位中...';
-            
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    position => {
-                        handleLocationSuccess(position.coords.latitude, position.coords.longitude, status, btn);
-                    },
-                    () => {
-                        handleLocationSuccess(24.1477, 120.6736, status, btn);
-                    }
-                );
-            } else {
-                handleLocationSuccess(24.1477, 120.6736, status, btn);
-            }
-        }
+        alert('✅ 新增成功！');
+        document.getElementById('fName').value = '';
+        document.getElementById('fDesc').value = '';
+        showTab('home');
+    }
 
-        function handleLocationSuccess(lat, lng, status, btn) {
-            currentLocation = { lat, lng };
-            status.textContent = `✓ 已定位 (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
-            status.classList.add('success');
-            
-            document.getElementById('currentLocation').className = 'location-card';
-            document.getElementById('currentLocation').innerHTML = `
-                <div class="name">📍 已定位</div>
-                <div class="address">座標: ${lat.toFixed(4)}, ${lng.toFixed(4)}</div>
-            `;
-            
-            performSearch();
-            btn.disabled = false;
+    function getLocation() {
+        if (navigator.geolocation) {
+            document.getElementById('locText').textContent = '定位中...';
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    currentLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    document.getElementById('locText').textContent = '已定位';
+                    displayPlaces();
+                },
+                function() {
+                    currentLocation = { lat: 1.3521, lng: 103.8198 };
+                    document.getElementById('locText').textContent = '已定位';
+                    displayPlaces();
+                }
+            );
         }
+    }
 
-        // 搜尋
-        function performSearch() {
-            const keyword = document.getElementById('searchInput').value.toLowerCase();
-            
-            if (keyword) {
-                searchResults = allPlaces.filter(r => 
-                    r.name.toLowerCase().includes(keyword) || 
-                    r.type.toLowerCase().includes(keyword) ||
-                    r.description.toLowerCase().includes(keyword)
-                );
-            } else {
-                searchResults = [...allPlaces];
-            }
-            
-            if (currentLocation) {
-                searchResults = searchResults.map(r => ({
-                    ...r,
-                    distance: calculateDistance(currentLocation.lat, currentLocation.lng, r.lat, r.lng)
-                }));
-                searchResults.sort((a, b) => a.distance - b.distance);
-            }
-            
-            applyDistanceFilter();
-        }
+    function search() {
+        displayPlaces();
+    }
 
-        function applyDistanceFilter() {
-            const distanceRadio = document.querySelector('input[name="distance"]:checked');
-            selectedDistance = distanceRadio ? distanceRadio.value : 'all';
-            
-            if (selectedDistance === 'all' || !currentLocation) {
-                filteredResults = searchResults;
-            } else {
-                const maxDistance = parseInt(selectedDistance);
-                filteredResults = searchResults.filter(r => r.distance <= maxDistance);
-            }
-            
-            displayResults();
-        }
+    function displayPlaces() {
+        const keyword = document.getElementById('searchInput').value.toLowerCase();
+        let results = allPlaces.filter(p => 
+            p.name.toLowerCase().includes(keyword) ||
+            p.type.toLowerCase().includes(keyword)
+        );
 
-        function searchByTag(tag) {
-            document.getElementById('searchInput').value = tag;
-            performSearch();
-        }
-
-        function displayResults() {
-            const container = document.getElementById('restaurantsList');
-            const noResults = document.getElementById('noResults');
-            const countNumber = document.getElementById('countNumber');
-            
-            countNumber.textContent = filteredResults.length;
-            
-            if (filteredResults.length === 0) {
-                container.innerHTML = '';
-                noResults.style.display = 'block';
-                return;
-            }
-            
-            noResults.style.display = 'none';
-            
-            container.innerHTML = filteredResults.map((r, idx) => `
-                <div class="restaurant-card custom">
-                    <span class="custom-badge">自訂</span>
-                    <div class="image">${r.icon}</div>
-                    <div class="info">
-                        <h3>${r.name}</h3>
-                        <div class="rating-section">
-                            <div class="rating">
-                                <span class="stars">★ ${r.rating}</span>
-                            </div>
-                        </div>
-                        <p class="description">${r.description}</p>
-                        <div class="location-info">
-                            <span>${r.country} - ${r.region}</span>
-                            <span>${r.type} · ${r.price}</span>
-                            ${r.distance !== undefined ? `<span class="distance">📍 ${formatDistance(r.distance)}</span>` : ''}
-                        </div>
-                        <div class="card-actions">
-                            <button class="detail-btn">查看詳情</button>
-                            <button class="route-btn">
-                                <i class="fas fa-directions"></i>
-                                查看位置
-                            </button>
-                            <button class="delete-btn" onclick="deletePlace(${idx})"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>
+        document.getElementById('itemsList').innerHTML = results.length ? results.map(p => `
+            <div class="item" onclick="showOnMap(${p.lat}, ${p.lng}, '${p.name}')">
+                <div class="item-name">${p.name} ${p.custom ? '<span class="custom-badge">自訂</span>' : ''}</div>
+                <div class="item-info">${p.type} · ${p.price} · ${p.region}</div>
+                <div class="item-rating">
+                    <span class="stars">★ ${p.rating || 4.0}</span>
+                    ${currentLocation ? `<span>(距離: ${calculateDistance(currentLocation.lat, currentLocation.lng, p.lat, p.lng).toFixed(2)}km)</span>` : ''}
                 </div>
-            `).join('');
+            </div>
+        `).join('') : '<div class="empty-state"><i class="fas fa-search" style="font-size:40px;"></i><p>無搜尋結果</p></div>';
+    }
+
+    function calculateDistance(lat1, lng1, lat2, lng2) {
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLng = (lng2 - lng1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng/2) * Math.sin(dLng/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    }
+
+    function showTab(tab) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(tab).classList.add('active');
+
+        if (tab === 'map') {
+            setTimeout(initMap, 100);
+        }
+    }
+
+    function initMap() {
+        if (!map) {
+            const defaultLocation = currentLocation || { lat: 1.3521, lng: 103.8198 };
+            map = new google.maps.Map(document.getElementById('googleMap'), {
+                zoom: 13,
+                center: defaultLocation
+            });
         }
 
-        // 新增地點
-        function addNewPlace(event) {
-            event.preventDefault();
+        clearMarkers();
+        const keyword = document.getElementById('searchInput').value.toLowerCase();
+        let results = allPlaces.filter(p => 
+            p.name.toLowerCase().includes(keyword) ||
+            p.type.toLowerCase().includes(keyword)
+        );
 
-            const newPlace = {
-                name: document.getElementById('placeName').value,
-                type: document.getElementById('placeType').value,
-                rating: parseFloat(document.getElementById('placeRating').value) || 4.0,
-                price: document.getElementById('placePrice').value,
-                location: document.getElementById('placeAddress').value,
-                lat: parseFloat(document.getElementById('placeLat').value),
-                lng: parseFloat(document.getElementById('placeLng').value),
-                description: document.getElementById('placeDescription').value,
-                icon: getIconByType(document.getElementById('placeType').value),
-                country: document.getElementById('country').value,
-                region: document.getElementById('region').value,
-                createdAt: new Date().toISOString()
-            };
+        results.forEach(place => {
+            const marker = new google.maps.Marker({
+                position: { lat: place.lat, lng: place.lng },
+                map: map,
+                title: place.name,
+                icon: getMarkerIcon(place.custom)
+            });
 
-            allPlaces.push(newPlace);
-            savePlaces();
-            alert('✅ 新增成功！');
-            closeAddModal();
-            performSearch();
+            marker.infoWindow = new google.maps.InfoWindow({
+                content: `<div style="padding:8px;"><strong>${place.name}</strong><br>${place.address}</div>`
+            });
+
+            marker.addListener('click', () => {
+                closeAllInfoWindows();
+                marker.infoWindow.open(map, marker);
+            });
+
+            markers.push(marker);
+        });
+
+        if (currentLocation) {
+            new google.maps.Marker({
+                position: currentLocation,
+                map: map,
+                title: '我的位置',
+                icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+            });
         }
+    }
 
-        // 刪除地點
-        function deletePlace(idx) {
-            if (confirm('確定要刪除嗎？')) {
-                allPlaces.splice(idx, 1);
-                savePlaces();
-                performSearch();
+    function getMarkerIcon(isCustom) {
+        return isCustom ? 'http://maps.google.com/mapfiles/ms/icons/orange-dot.png' : 'http://maps.google.com/mapfiles/ms/icons/red-dot.png';
+    }
+
+    function clearMarkers() {
+        markers.forEach(m => m.setMap(null));
+        markers = [];
+    }
+
+    function closeAllInfoWindows() {
+        markers.forEach(m => m.infoWindow?.close());
+    }
+
+    function showOnMap(lat, lng, name) {
+        showTab('map');
+        setTimeout(() => {
+            if (map) {
+                map.setCenter({ lat, lng });
+                map.setZoom(15);
             }
-        }
+        }, 100);
+    }
 
-        // 導出數據
-        function exportData() {
-            const dataStr = JSON.stringify(allPlaces, null, 2);
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `localbite-backup-${new Date().getTime()}.json`;
-            link.click();
-            alert('✅ 數據已導出');
-        }
+    function toggleAuthModal() {
+        document.getElementById('authModal').classList.toggle('active');
+    }
 
-        // 導入數據
-        function importData() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json';
-            input.onchange = e => {
-                const file = e.target.files[0];
-                const reader = new FileReader();
-                reader.onload = event => {
-                    try {
-                        const data = JSON.parse(event.target.result);
-                        allPlaces = Array.isArray(data) ? data : [data];
-                        savePlaces();
-                        performSearch();
-                        alert('✅ 數據已導入');
-                    } catch (error) {
-                        alert('❌ 導入失敗：文件格式不正確');
-                    }
-                };
-                reader.readAsText(file);
-            };
-            input.click();
-        }
+    function showSignup() {
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('signupForm').style.display = 'block';
+    }
 
-        // 清除所有數據
-        function clearAllData() {
-            if (confirm('確定要清除所有數據嗎？此操作無法復原！')) {
-                allPlaces = [];
-                savePlaces();
-                displayResults();
-                alert('✅ 所有數據已清除');
-            }
-        }
+    function showLogin() {
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('signupForm').style.display = 'none';
+    }
 
-        // Modal 控制
-        function openAddModal() {
-            document.getElementById('addModal').style.display = 'block';
-        }
+    // 初始化
+    initFirebase();
+</script>
 
-        function closeAddModal() {
-            document.getElementById('addModal').style.display = 'none';
-            document.querySelector('form').reset();
-        }
-
-        // 初始化
-        window.onload = function() {
-            displayResults();
-        };
-
-        window.onclick = function(event) {
-            const addModal = document.getElementById('addModal');
-            if (event.target == addModal) addModal.style.display = 'none';
-        };
-    </script>
 </body>
 </html>
